@@ -1,0 +1,1 @@
+# This is Vanilla JS App that displays popular Movies and current TV shows
