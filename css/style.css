@@ -218,6 +218,7 @@ section h2 {
 /* Movie Details */
 .details-top {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
   margin: 50px 0 30px;
@@ -226,7 +227,7 @@ section h2 {
 .details-top img {
   width: 400px;
   height: 100%;
-  margin-right: 60px;
+  /* margin-right: 60px; */
   object-fit: cover;
 }
 
