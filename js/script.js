@@ -1,6 +1,13 @@
 // we need to create a router since using Vanilla JS 
 const global = {
     currentPage: window.location.pathname,
+
+    search: { // THis object can be usedin functions since its in global scope
+        term: '', // These will be used in the fetch porocess 
+        type: '', // when you write down the fetching path these can be used
+        page: 1, // The reason being the term and type are written in the link
+        totalPages:1, // check the HTML Elm input has name and search type
+    }
 };
 
 
@@ -228,6 +235,26 @@ if ( type === 'movie') {
 }
 }
 
+
+// This function is to earch movies
+// the stesp are :  1 -create search function 2 - create checking search box alerts
+// 3 - create fetching data from data base for the form
+async function search() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    global.search.type = urlParams.get('type') // In the variable u accesing the global
+    global.search.term = urlParams.get('search-term') // you are storing the link values in these url Prams
+
+     if (global.search.term !== '' && global.search.term !== null && isNaN(global.search.term)) {
+
+     } else {
+        showAlert('PLease Enter search term')
+     }
+
+}
+
+
 // Setting up the Slider function
 async function displaySlider() {
     const {results}= await fetchAPIData('movie/now_playing')
@@ -249,6 +276,17 @@ async function displaySlider() {
         initSwiper();
     });
 
+}
+
+// Show Alert for search function else 
+function showAlert(message, className) { /// These Prams here for multiple use
+    const alerEl = document.createElement('div');
+    alerEl.classList.add('alert', className); // here the className in case we needed to add another
+    // class to the function --- but we already have one class assgined that is alert
+    alerEl.appendChild(document.createTextNode(message));
+    document.querySelector('#alert').appendChild(alerEl);
+
+    setTimeout(()=> alerEl.remove(),3000)
 }
 
 // This is the option for the swiper 
@@ -327,7 +365,7 @@ function init() {
              diplsayShowDetails();
             break;
          case '/search.html':
-            console.log('Serach Bar');
+            search();
             break;
     }
 
