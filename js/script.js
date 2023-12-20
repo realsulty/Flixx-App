@@ -7,6 +7,7 @@ const global = {
         type: '', // when you write down the fetching path these can be used
         page: 1, // The reason being the term and type are written in the link
         totalPages:1, // check the HTML Elm input has name and search type
+        totalResults: 0,
     },
 
     api: {
@@ -253,8 +254,11 @@ async function search() {
     global.search.term = urlParams.get('search-term') // you are storing the link values in these url Prams
 
      if (global.search.term !== '' && global.search.term !== null && isNaN(global.search.term)) {
-        const {results, total_pages, page} = await searchAPIData();
-
+        const {results, total_pages, page, total_results} = await searchAPIData();
+        
+        global.search.page = page;
+        global.search.totalPages = total_pages;
+        global.search.totalResults = total_results
     if (results.length === 0) {
         showAlert('No results found')
         return;
@@ -268,8 +272,16 @@ async function search() {
 
 }
 
+// diplay Pagination ( pages and whatnot)
+
 
 function displaySearchResults(results) {
+
+    //quick and dirty way of clearing the page to load new content
+    document.querySelector('#search-results').innerHTML ='';
+    document.querySelector('#search-results-heading').innerHTML ='';
+    document.querySelector('#pagination').innerHTML ='';
+
     results.forEach(result=> {
         const div = document.createElement('div');
         div.classList.add('card');
@@ -296,9 +308,55 @@ function displaySearchResults(results) {
             <small class="text-muted">Release: ${global.search.type === 'movie' ? result.release_date : result.first_air_date}</small>
           </p>
         </div>`;
+
+        document.querySelector('#search-results-heading').innerHTML = `
+        <h2>${results.length} of ${global.search.totalResults} Results for ${global.search.term}</h2>
+        `
+
         document.querySelector('#search-results').appendChild(div);
-    })
+    });
+
+    displayPagination();
 }
+
+
+function displayPagination() {
+    const div = document.createElement('div');
+    div.classList.add('pagination');
+    div.innerHTML = `
+    <button class="btn btn-primary" id="prev">Prev</button>
+    <button class="btn btn-primary" id="next">Next</button>
+    <div class="page-counter">Page ${global.search.page} of ${global.search.totalPages}</div>
+    `;
+    document.querySelector('#pagination').appendChild(div)
+
+    // Disable prev page buttom on first page
+    if (global.search.page === 1) {
+        document.querySelector('#prev').disabled = true;
+    }
+    if (global.search.page === global.search.totalPages) {
+        document.querySelector('#next').disabled = true;
+    }
+
+    // Next Page it gives the next btn the abiliy to move you
+document.querySelector('#next').addEventListener('click', async () => {
+
+global.search.page++; // Here to incerment the pages
+const { results, total_pages} = await searchAPIData();
+displaySearchResults(results);
+
+});
+ // Prevouis Page it gives the next btn the abiliy to move you
+ document.querySelector('#prev').addEventListener('click', async () => {
+
+    global.search.page--; // Here to incerment the pages
+    const { results, total_pages} = await searchAPIData();
+    displaySearchResults(results);
+    
+    });
+
+}
+
 
 // Setting up the Slider function
 async function displaySlider() {
@@ -385,7 +443,8 @@ async function searchAPIData() {
     const API_URL = global.api.apiUrl;
     
     const response = await fetch(
-        `${API_URL}search/${global.search.type}?api_key=${API_KEY}&languages=en-US&query=${global.search.term}`
+        `${API_URL}search/${global.search.type}?api_key=${API_KEY}&languages=en-US&query=
+        ${global.search.term}&page=${global.search.page}`
     );
 
     showSpinner();
