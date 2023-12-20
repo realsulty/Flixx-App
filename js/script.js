@@ -7,7 +7,13 @@ const global = {
         type: '', // when you write down the fetching path these can be used
         page: 1, // The reason being the term and type are written in the link
         totalPages:1, // check the HTML Elm input has name and search type
+    },
+
+    api: {
+        apiKey : '5fee0608c42a6c8dfacafe995e841de1',
+        apiUrl: 'https://api.themoviedb.org/3/'
     }
+
 };
 
 
@@ -247,13 +253,52 @@ async function search() {
     global.search.term = urlParams.get('search-term') // you are storing the link values in these url Prams
 
      if (global.search.term !== '' && global.search.term !== null && isNaN(global.search.term)) {
+        const {results, total_pages, page} = await searchAPIData();
+
+    if (results.length === 0) {
+        showAlert('No results found')
+        return;
+    }
+
+    displaySearchResults(results); // This is the functions were we sit up the dipslay of search
 
      } else {
-        showAlert('PLease Enter search term')
+        showAlert('PLease Enter a valid search term')
      }
 
 }
 
+
+function displaySearchResults(results) {
+    results.forEach(result=> {
+        const div = document.createElement('div');
+        div.classList.add('card');
+        div.innerHTML = `
+        
+        <a href="${global.search.type}-details.html?id=${result.id}">
+          ${
+            result.poster_path
+            ?`<img  
+            src="https://image.tmdb.org/t/p/w500${result.poster_path}"
+            class="card-img-top"
+            alt="${global.search.type === 'movie' ? result.title : result.name}"
+          />` //               (? means THEN DO ) Two dots : means ELSE DO
+          : `<img
+          src="images/no-image.jpg"
+          class="card-img-top"
+          alt="${global.search.type === 'movie' ? result.title : result.name}"
+        />`
+          }
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">${global.search.type === 'movie' ? result.title : result.name}</h5>
+          <p class="card-text">
+            <small class="text-muted">Release: ${global.search.type === 'movie' ? result.release_date : result.first_air_date}</small>
+          </p>
+        </div>`;
+        document.querySelector('#search-results').appendChild(div);
+    })
+}
 
 // Setting up the Slider function
 async function displaySlider() {
@@ -322,11 +367,25 @@ function initSwiper() {
 
 // Fetch Data from TMDB API this can be referd to as a global fetch method
 async function fetchAPIData(endpoint) {
-    const API_KEY = '5fee0608c42a6c8dfacafe995e841de1';
-    const API_URL = 'https://api.themoviedb.org/3/'
+    const API_KEY = global.api.apiKey;
+    const API_URL = global.api.apiUrl;
     
     const response = await fetch(
         `${API_URL}${endpoint}?api_key=${API_KEY}&languages=en-US`
+    );
+
+    showSpinner();
+    const data = await response.json()
+    hideSpinner();
+    return data;
+}
+/// This asyc functions is getch data fro searching 
+async function searchAPIData() {
+    const API_KEY = global.api.apiKey;
+    const API_URL = global.api.apiUrl;
+    
+    const response = await fetch(
+        `${API_URL}search/${global.search.type}?api_key=${API_KEY}&languages=en-US&query=${global.search.term}`
     );
 
     showSpinner();
