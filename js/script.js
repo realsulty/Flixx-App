@@ -228,7 +228,59 @@ if ( type === 'movie') {
 }
 }
 
+// Setting up the Slider function
+async function displaySlider() {
+    const {results}= await fetchAPIData('movie/now_playing')
+    
+    results.forEach((movie) => {
+        const div = document.createElement('div');
+        div.classList.add('swiper-slide');
 
+        div.innerHTML = `
+        <a href="movie-details.html?id=${movie.id}">
+          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="Movie Title" />
+        </a>
+        <h4 class="swiper-rating">
+          <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(1)}/ 10
+        </h4>
+        `
+        document.querySelector('.swiper-wrapper').appendChild(div);
+
+        initSwiper();
+    });
+
+}
+
+// This is the option for the swiper 
+// we can set the values, the sizes and the functionality of it 
+// Check the docs 
+function initSwiper() {
+    const swiper = new Swiper('.swiper', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        freeMode: true,
+        loop:true,
+        autoplay:{
+            delay: 4000,
+            disableOnInteraction: false
+        },
+        breakpoints : {
+            500: {
+              slidesPerView: 2  
+            },
+        
+            700: {
+                slidesPerView: 3
+            },
+            1200: {
+                slidesPerView: 4
+            },
+        }
+
+    })
+
+
+}
 
 // Fetch Data from TMDB API this can be referd to as a global fetch method
 async function fetchAPIData(endpoint) {
@@ -262,6 +314,7 @@ function init() {
     switch (global.currentPage) {
         case '/': // The Two dots mean Then ... Not OR !! 
         case '/index.html': // Must Include the TWO DOTS 
+            displaySlider();
             displayPopularMovies();
          break;
          case '/shows.html':
